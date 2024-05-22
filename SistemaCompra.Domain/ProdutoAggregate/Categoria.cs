@@ -4,6 +4,7 @@
     {
         Madeira=1,
         Juncao=2,
-        Fixadores=3
+        Fixadores=3,
+        Outros=4
     }
 }

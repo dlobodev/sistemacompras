@@ -1,6 +1,6 @@
 ﻿using SistemaCompra.Domain.Core;
 using SistemaCompra.Domain.ProdutoAggregate;
-using SistemaCompra.Domain.SolicitacaoCompraAggregate;
+using SistemaCompraAgg = SistemaCompra.Domain.SolicitacaoCompraAggregate;
 using System.Collections.Generic;
 using Xunit;
 
@@ -9,30 +9,28 @@ namespace SistemaCompra.Domain.Test.SolicitacaoCompraAggregate
     public class SolicitacaoCompra_RegistrarCompraDeve
     {
         [Fact]
-        public void DefinirPrazo30DiasAoComprarMais50mil()
+        public void NotificarCondicaoPagamentoDeveSer30DiasAoComprarMais50mil()
         {
             //Dado
-            var solicitacao = new SolicitacaoCompra("rodrigoasth", "rodrigoasth");
-            var itens = new List<Item>();
-            var produto = new Produto("Cedro", "Transversal 3/3", Categoria.Madeira.ToString(), 1001);
-            itens.Add(new Item(produto, 50));
+            var item = new SistemaCompraAgg.Item(new Produto("Notebook", "Notebook", "Outros", 6000), 10);
+            var solicitacao = new SistemaCompraAgg.SolicitacaoCompra("rodrigoasth", "rodrigoasth", new SistemaCompraAgg.CondicaoPagamento(90));
+            solicitacao.Itens.Add(item);
 
-            //Quando
-            solicitacao.RegistrarCompra(itens);
+            //Quando 
+            var ex = Assert.Throws<BusinessRuleException>(() => solicitacao.RegistrarCompra());
 
             //Então
-            //Assert.Equal(30, solicitacao.CondicaoPagamento.Valor);
+            Assert.Equal("Para compras com valor acima de R$50.000,00, a condição de pagamento deve ser igual a 30 dias!", ex.Message);
         }
 
         [Fact]
         public void NotificarErroQuandoNaoInformarItensCompra()
         {
             //Dado
-            var solicitacao = new SolicitacaoCompra("rodrigoasth", "rodrigoasth");
-            var itens = new List<Item>();
-
+            var solicitacao = new SistemaCompraAgg.SolicitacaoCompra("rodrigoasth", "rodrigoasth", new SistemaCompraAgg.CondicaoPagamento(30));
+            
             //Quando 
-            var ex = Assert.Throws<BusinessRuleException>(() => solicitacao.RegistrarCompra(itens));
+            var ex = Assert.Throws<BusinessRuleException>(() => solicitacao.RegistrarCompra());
 
             //Então
             Assert.Equal("A solicitação de compra deve possuir itens!", ex.Message);
